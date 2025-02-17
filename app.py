@@ -1,4 +1,7 @@
 import os
+import time
+import threading
+import requests
 from datetime import datetime
 from flask import (
     Flask,
@@ -18,7 +21,7 @@ load_dotenv()  # Load environment variables from .env
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "fallback-secret")
 
-# Initialize Socket.IO (no reference to "request" import)
+# Initialize Socket.IO
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # --- MongoDB Setup ---
@@ -43,6 +46,12 @@ def inject_datetime():
     e.g. in your template: {{ datetime.utcnow().year }}
     """
     return dict(datetime=datetime)
+
+
+# A simple route for keep-alive pings
+@app.route("/ping")
+def ping():
+    return "PONG", 200
 
 
 # Mock login approach for demonstration
@@ -212,13 +221,38 @@ def handle_send_message(data):
         unread_count = messages_collection.count_documents(
             {"room_id": ObjectId(room_id), "timestamp": {"$gt": last_read_time}}
         )
-        # Because we only have the user's saved sid from 'register_index',
-        # we emit to that SID specifically:
         socketio.emit(
             "unread_update", {"room_id": room_id, "unread": unread_count}, room=sid
         )
 
 
-# For local testing:
+# -----------------------------------------------
+# 2) Keep-Alive Mechanism
+# -----------------------------------------------
+def keep_alive():
+    """
+    Periodically pings our own /ping endpoint to keep the free instance from
+    spinning down due to inactivity.
+    """
+    # Replace with your actual deployed URL (e.g. your Render domain).
+    # For example: "https://myapp.onrender.com/ping"
+    ping_url = os.getenv("KEEP_ALIVE_URL", "http://localhost:5000/ping")
+    interval_seconds = 600  # e.g. 10 minutes
+
+    while True:
+        time.sleep(interval_seconds)
+        try:
+            requests.get(ping_url, timeout=10)
+            print(f"Keep-alive ping sent to {ping_url}")
+        except Exception as e:
+            print(f"Keep-alive ping failed: {e}")
+
+
+# For local or production run
 if __name__ == "__main__":
+    # Start keep-alive in a separate thread
+    t = threading.Thread(target=keep_alive, daemon=True)
+    t.start()
+
+    # Run Socket.IO
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
