@@ -3,267 +3,113 @@
   <head>
     <meta charset="UTF-8" />
     <title>Discussion Rooms</title>
-    <style>
-      /* --- Global Resets & Layout --- */
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      html, body {
-        height: 100%;
-        background-color: #f9fafb; /* a light gray background */
-        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        line-height: 1.4;
-      }
-      body {
-        display: flex;
-        flex-direction: column;
-      }
-
-      /* --- Header --- */
-      header {
-        background-color: #fff; 
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-      }
-      .header-content {
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 1rem 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .header-content h1 {
-        font-size: 1.25rem; /* ~ text-xl */
-        font-weight: 600;   /* ~ font-semibold */
-        color: #1f2937;     /* a dark gray */
-      }
-      .welcome-text {
-        font-size: 0.875rem; /* ~ text-sm */
-        color: #4b5563;       /* medium gray */
-      }
-      .welcome-text .username {
-        font-weight: 500;  /* ~ font-medium */
-        color: #111827;    /* near-black */
-      }
-
-      /* --- Make header stack on smaller screens --- */
-      @media (max-width: 640px) {
-        .header-content {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 0.5rem;
-        }
-      }
-
-      /* --- Main Content --- */
-      main {
-        flex: 1;
-      }
-      .main-content {
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 2rem 1rem;
-      }
-      .main-content h2 {
-        font-size: 1.5rem;   /* ~ text-2xl */
-        font-weight: 700;    /* ~ font-bold */
-        color: #1f2937;      /* dark gray */
-        margin-bottom: 1.5rem;
-      }
-
-      /* --- Rooms Grid --- */
-      .rooms-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-      @media (min-width: 640px) {
-        .rooms-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-      @media (min-width: 1024px) {
-        .rooms-grid {
-          grid-template-columns: repeat(3, 1fr);
-        }
-      }
-
-      .room-card {
-        background-color: #fff;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
-      .room-link {
-        font-size: 1.125rem; /* ~ text-lg */
-        font-weight: 600;    /* ~ font-semibold */
-        color: #4f46e5;      /* ~ indigo-600 */
-        text-decoration: none;
-        transition: color 0.2s ease, text-decoration 0.2s ease;
-      }
-      .room-link:hover {
-        color: #3730a3; /* darker indigo */
-        text-decoration: underline;
-      }
-
-      .unread-count {
-        margin-top: 0.5rem;
-        font-size: 0.875rem; /* ~ text-sm */
-        color: #4b5563;      /* medium gray */
-      }
-      .unread {
-        color: #dc2626;      /* red-600 */
-      }
-      .no-new {
-        color: #9ca3af;      /* gray-400 */
-      }
-
-      /* --- Create Room Card --- */
-      .new-room {
-        margin-top: 2.5rem;  /* ~ mt-10 */
-        background-color: #fff;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-      }
-      .new-room h3 {
-        font-size: 1.125rem; /* ~ text-lg */
-        font-weight: 600;    /* ~ font-semibold */
-        color: #1f2937;      /* dark gray */
-        margin-bottom: 1rem;
-      }
-      .new-room form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-      .new-room input[type="text"] {
-        border: 1px solid #d1d5db; /* ~ border-gray-300 */
-        border-radius: 0.375rem;   /* ~ rounded-md */
-        padding: 0.5rem 0.75rem;   /* ~ px-3 py-2 */
-        font-size: 1rem;
-        outline: none;
-      }
-      .new-room input[type="text"]:focus {
-        border-color: #6366f1; 
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4); /* ~ focus ring */
-      }
-      .new-room button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem; 
-        font-weight: 500;
-        color: #fff;
-        background-color: #4f46e5;
-        border: none;
-        border-radius: 0.375rem;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-      }
-      .new-room button:hover {
-        background-color: #4338ca;
-      }
-
-      /* --- Footer --- */
-      footer {
-        background-color: #fff;
-        border-top: 1px solid #e5e7eb; /* ~ border-gray-200 */
-      }
-      .footer-content {
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 1rem;
-        text-align: center;
-        font-size: 0.875rem; /* ~ text-sm */
-        color: #6b7280;      /* gray-500 */
-      }
-    </style>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <header>
-      <div class="header-content">
-        <h1>Discussion Forum</h1>
-        <div class="welcome-text">
-          Welcome, <span class="username">{{ username }}</span>
-        </div>
+  <body class="min-h-screen flex flex-col bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow">
+      <div
+        class="max-w-7xl w-full mx-auto px-4 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between"
+      >
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 leading-tight">
+          Discussion Forum
+        </h1>
+        <p class="mt-2 sm:mt-0 text-sm text-gray-600">
+          Welcome, <span class="font-medium text-gray-900">{{ username }}</span>
+        </p>
       </div>
     </header>
 
-    <main>
-      <div class="main-content">
-        <h2>All Rooms</h2>
+    <!-- Main Content -->
+    <main class="flex-1">
+      <div class="max-w-7xl w-full mx-auto px-4 py-8">
+        <!-- Page Title -->
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 leading-tight mb-6">
+          All Rooms
+        </h2>
 
-        <ul class="rooms-grid">
+        <!-- Rooms Grid -->
+        <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {% for room in rooms %}
-          <li id="room-{{ room.id }}" class="room-card">
+          <li class="bg-white rounded-lg shadow p-6 flex flex-col justify-between">
             <div>
-              <a href="{{ url_for('chat', room_id=room.id) }}" class="room-link">
+              <a
+                href="{{ url_for('chat', room_id=room.id) }}"
+                class="block text-lg sm:text-xl font-semibold text-indigo-600 hover:underline transition duration-200"
+              >
                 {{ room.name }}
               </a>
             </div>
-            <div id="unread-{{ room.id }}" class="unread-count">
+            <div id="unread-{{ room.id }}" class="mt-4 text-sm">
               {% if room.unread > 0 %}
-              <strong class="unread">(Unread: {{ room.unread }})</strong>
+              <span class="font-medium text-red-600"
+                >(Unread: {{ room.unread }})</span
+              >
               {% else %}
-              <span class="no-new">(No new messages)</span>
+              <span class="text-gray-400">(No new messages)</span>
               {% endif %}
             </div>
           </li>
           {% endfor %}
         </ul>
 
-        <div class="new-room">
-          <h3>Create a New Room</h3>
-          <form action="{{ url_for('create_room') }}" method="POST">
+        <!-- Create Room Form -->
+        <div class="mt-10 bg-white p-6 rounded-lg shadow">
+          <h3 class="text-xl font-semibold text-gray-800 mb-4">
+            Create a New Room
+          </h3>
+          <form
+            action="{{ url_for('create_room') }}"
+            method="POST"
+            class="flex flex-col gap-4"
+          >
             <input
               type="text"
               name="room_name"
               placeholder="Room Name"
               required
+              class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            <button type="submit">Create Room</button>
+            <button
+              type="submit"
+              class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition duration-200"
+            >
+              Create Room
+            </button>
           </form>
         </div>
       </div>
     </main>
 
-    <footer>
-      <div class="footer-content">
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200">
+      <div
+        class="max-w-7xl w-full mx-auto px-4 py-4 text-center text-sm text-gray-500"
+      >
         &copy; {{ datetime.utcnow().year }} Discussion Forum. All rights reserved.
       </div>
     </footer>
 
-    <!-- Socket.IO for real-time unread updates -->
+    <!-- Socket.IO Script -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
       const socket = io();
       const username = "{{ username }}";
 
-      // Once connected, we have a socket.id
+      // Once connected, register with the server
       socket.on("connect", () => {
-        socket.emit("register_index", {
-          username: username,
-          sid: socket.id,
-        });
+        socket.emit("register_index", { username, sid: socket.id });
       });
 
-      // Listen for unread updates and update the corresponding room element
+      // Listen for unread updates
       socket.on("unread_update", (data) => {
-        const roomId = data.room_id;
-        const unread = data.unread;
-        const unreadElem = document.getElementById("unread-" + roomId);
+        const unreadElem = document.getElementById("unread-" + data.room_id);
         if (unreadElem) {
-          if (unread > 0) {
-            unreadElem.innerHTML = `<strong class="unread">(Unread: ${unread})</strong>`;
+          if (data.unread > 0) {
+            unreadElem.innerHTML = `<span class="font-medium text-red-600">(Unread: ${data.unread})</span>`;
           } else {
-            unreadElem.innerHTML = `<span class="no-new">(No new messages)</span>`;
+            unreadElem.innerHTML = `<span class="text-gray-400">(No new messages)</span>`;
           }
         }
       });
