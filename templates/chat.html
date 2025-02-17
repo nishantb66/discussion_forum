@@ -13,7 +13,8 @@
       html, body {
         height: 100%;
         background-color: #f9fafb; /* light gray background */
-        font-family: sans-serif;
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.4;
       }
       body {
         display: flex;
@@ -45,9 +46,19 @@
         background: none;
         border: none;
         cursor: pointer;
+        transition: color 0.2s ease;
       }
       .leave-button:hover {
         color: #b91c1c;      /* darker red */
+      }
+
+      /* --- Make header stack on smaller screens --- */
+      @media (max-width: 640px) {
+        .header-content {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
       }
 
       /* --- Main Content --- */
@@ -69,7 +80,7 @@
         overflow-y: auto;
       }
       .chat-message {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem; /* slightly more spacing between messages */
       }
       .chat-message strong {
         color: #4f46e5; /* ~ text-indigo-700 */
@@ -77,7 +88,7 @@
       .status-message {
         color: #6b7280; /* ~ text-gray-500 */
         font-style: italic;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
       }
 
       /* --- Chat Form --- */
@@ -108,9 +119,18 @@
         border: none;
         border-radius: 0.375rem;
         cursor: pointer;
+        transition: background-color 0.2s ease;
       }
       .send-button:hover {
         background-color: #4338ca;
+      }
+
+      /* Stack the chat form on smaller screens */
+      @media (max-width: 640px) {
+        .chat-form {
+          flex-direction: column;
+          align-items: stretch;
+        }
       }
 
       /* --- Footer --- */
@@ -221,3 +241,4 @@
     </script>
   </body>
 </html>
+
