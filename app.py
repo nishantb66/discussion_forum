@@ -10,11 +10,13 @@ from flask import (
     redirect,
     url_for,
     session,
+    request,
 )
 from flask_socketio import SocketIO, join_room, leave_room, emit, disconnect
 from bson import ObjectId
 import pymongo
 from dotenv import load_dotenv
+from collections import defaultdict
 
 load_dotenv()  # Load environment variables from .env
 
@@ -31,9 +33,14 @@ db = client["discussion_forum"]
 rooms_collection = db["rooms"]
 messages_collection = db["messages"]
 users_collection = db["users"]  # For tracking user data & read statuses
+counters_collection = db["counters"]  # For generating unique user numbers
 
 # Global dictionary to track index page socket connections: { username: socket_id }
 index_sockets = {}
+
+# Track active SIDs in each room for cleanup
+# rooms_occupancy = { room_id (as str): set_of_sids }
+rooms_occupancy = defaultdict(set)
 
 
 # -----------------------------------------------
@@ -42,8 +49,8 @@ index_sockets = {}
 @app.context_processor
 def inject_datetime():
     """
-    This makes the 'datetime' object available in all Jinja templates.
-    e.g. in your template: {{ datetime.utcnow().year }}
+    Makes 'datetime' available in all Jinja templates.
+    e.g. {{ datetime.utcnow().year }}
     """
     return dict(datetime=datetime)
 
@@ -54,11 +61,22 @@ def ping():
     return "PONG", 200
 
 
-# Mock login approach for demonstration
+# Mock login approach with auto-generated user names
 @app.before_request
 def mock_login():
+    """
+    If the user doesn't have a session username, assign them a unique name like 'Attendee1'.
+    """
     if "username" not in session:
-        session["username"] = f"User_{datetime.now().timestamp()}"
+        # Atomically increment a counter in MongoDB
+        result = counters_collection.find_one_and_update(
+            {"_id": "user_count"},
+            {"$inc": {"seq": 1}},
+            upsert=True,
+            return_document=pymongo.ReturnDocument.AFTER,
+        )
+        user_number = result["seq"]
+        session["username"] = f"Attendee{user_number}"
 
 
 @app.route("/")
@@ -68,12 +86,13 @@ def index():
     """
     rooms = list(rooms_collection.find().sort("created_at", -1))
     username = session["username"]
+
     user_data = users_collection.find_one({"username": username})
     if not user_data:
         # Create user document if doesn't exist
         user_data = {
             "username": username,
-            "last_read": {},  # { room_id: datetime_of_last_read }
+            "last_read": {},  # { room_id_str: datetime_of_last_read }
         }
         users_collection.insert_one(user_data)
     else:
@@ -148,9 +167,8 @@ def register_index(data):
 @socketio.on("disconnect")
 def on_disconnect():
     """
-    Without 'request' from flask_socketio, we can't directly see which SID disconnected.
-    We'll skip removing the user from index_sockets to avoid errors.
-    In production, you'd want a real approach to track and remove stale connections.
+    We do not remove from index_sockets here because we lack direct mapping
+    from request.sid -> username. In a production app, you'd track & remove stale connections.
     """
     pass
 
@@ -163,6 +181,10 @@ def handle_join_room(data):
     username = data.get("username")
     room_id = data.get("room_id")
     join_room(room_id)
+
+    # Track this SID in our occupancy set
+    rooms_occupancy[room_id].add(request.sid)
+
     emit("status", f"{username} has joined the room.", room=room_id)
 
 
@@ -170,16 +192,47 @@ def handle_join_room(data):
 def handle_leave_room(data):
     """
     User leaves a Socket.IO room.
-    Update their last_read timestamp so future messages count as unread.
+    Update their last_read timestamp so future messages count as unread after now.
+    If this is the last user in the room, delete the room & its messages entirely.
     """
     username = data.get("username")
     room_id = data.get("room_id")
     leave_room(room_id)
-    # Update last_read for this room to now
+
+    # Mark all messages as read upon leaving (ensures unread = 0)
     users_collection.update_one(
         {"username": username}, {"$set": {f"last_read.{room_id}": datetime.utcnow()}}
     )
+
+    # Recompute the user's unread count for that room (should be 0 now)
+    user_data = users_collection.find_one({"username": username})
+    last_read_time = user_data.get("last_read", {}).get(room_id, datetime.min)
+    unread_count = messages_collection.count_documents(
+        {"room_id": ObjectId(room_id), "timestamp": {"$gt": last_read_time}}
+    )
+
+    # Notify only this user’s index socket to set unread to 0
+    sid = index_sockets.get(username)
+    if sid:
+        socketio.emit(
+            "unread_update", {"room_id": room_id, "unread": unread_count}, room=sid
+        )
+
     emit("status", f"{username} has left the room.", room=room_id)
+
+    # Remove this SID from occupancy
+    rooms_occupancy[room_id].discard(request.sid)
+
+    # If no one is left in the room, delete it and all messages
+    if len(rooms_occupancy[room_id]) == 0:
+        # Delete the room from the database
+        rooms_collection.delete_one({"_id": ObjectId(room_id)})
+        # Delete all messages from this room
+        messages_collection.delete_many({"room_id": ObjectId(room_id)})
+        # Remove references from every user’s last_read
+        users_collection.update_many({}, {"$unset": {f"last_read.{room_id}": 1}})
+        # Clean up occupancy
+        del rooms_occupancy[room_id]
 
 
 @socketio.on("send_message")
@@ -226,6 +279,29 @@ def handle_send_message(data):
         )
 
 
+# --- New Typing Indicator Events ---
+
+
+@socketio.on("typing")
+def handle_typing(data):
+    """
+    Broadcast that a user is typing to others in the room.
+    """
+    username = data.get("username")
+    room_id = data.get("room_id")
+    emit("typing", {"username": username}, room=room_id, include_self=False)
+
+
+@socketio.on("stop_typing")
+def handle_stop_typing(data):
+    """
+    Broadcast that a user has stopped typing.
+    """
+    username = data.get("username")
+    room_id = data.get("room_id")
+    emit("stop_typing", {"username": username}, room=room_id, include_self=False)
+
+
 # -----------------------------------------------
 # 2) Keep-Alive Mechanism
 # -----------------------------------------------
@@ -234,8 +310,7 @@ def keep_alive():
     Periodically pings our own /ping endpoint to keep the free instance from
     spinning down due to inactivity.
     """
-    # Replace with your actual deployed URL (e.g. your Render domain).
-    # For example: "https://myapp.onrender.com/ping"
+    # Replace with your actual deployed URL (e.g. "https://myapp.onrender.com/ping").
     ping_url = os.getenv("KEEP_ALIVE_URL", "http://localhost:5000/ping")
     interval_seconds = 600  # e.g. 10 minutes
 
@@ -248,7 +323,6 @@ def keep_alive():
             print(f"Keep-alive ping failed: {e}")
 
 
-# For local or production run
 if __name__ == "__main__":
     # Start keep-alive in a separate thread
     t = threading.Thread(target=keep_alive, daemon=True)

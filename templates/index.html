@@ -2,114 +2,127 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Discussion Rooms</title>
-    <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add Inter font for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; }
+    </style>
   </head>
-  <body class="min-h-screen flex flex-col bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow">
-      <div
-        class="max-w-7xl w-full mx-auto px-4 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between"
-      >
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 leading-tight">
-          Discussion Forum
-        </h1>
-        <p class="mt-2 sm:mt-0 text-sm text-gray-600">
-          Welcome, <span class="font-medium text-gray-900">{{ username }}</span>
-        </p>
+  <body class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <!-- Header with glass morphism effect -->
+    <header class="sticky top-0 z-50 backdrop-blur-sm bg-white/80 border-b border-gray-200">
+      <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center space-x-3">
+            <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">
+              Discussion Forum
+            </h1>
+          </div>
+          <div class="flex items-center space-x-4">
+            <p class="text-sm text-gray-600">
+              Welcome, <span class="font-semibold text-gray-900">{{ username }}</span>
+            </p>
+          </div>
+        </div>
       </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1">
-      <div class="max-w-7xl w-full mx-auto px-4 py-8">
-        <!-- Page Title -->
-        <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 leading-tight mb-6">
-          All Rooms
-        </h2>
+    <main class="flex-1 py-8 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">
+            Discussion Rooms
+          </h2>
+          
+          <!-- Create Room Button - Moved to top for better accessibility -->
+          <button onclick="document.getElementById('createRoomForm').classList.toggle('hidden')"
+                  class="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Create New Room
+          </button>
+        </div>
 
-        <!-- Rooms Grid -->
-        <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {% for room in rooms %}
-          <li class="bg-white rounded-lg shadow p-6 flex flex-col justify-between">
-            <div>
-              <a
-                href="{{ url_for('chat', room_id=room.id) }}"
-                class="block text-lg sm:text-xl font-semibold text-indigo-600 hover:underline transition duration-200"
-              >
-                {{ room.name }}
-              </a>
+        <!-- Create Room Form - Hidden by default -->
+        <div id="createRoomForm" class="hidden mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <form action="{{ url_for('create_room') }}" method="POST" class="max-w-md mx-auto">
+            <div class="mb-4">
+              <label for="room_name" class="block text-sm font-medium text-gray-700 mb-2">Room Name</label>
+              <input type="text" name="room_name" id="room_name" required
+                     class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                     placeholder="Enter room name...">
             </div>
-            <div id="unread-{{ room.id }}" class="mt-4 text-sm">
-              {% if room.unread > 0 %}
-              <span class="font-medium text-red-600"
-                >(Unread: {{ room.unread }})</span
-              >
-              {% else %}
-              <span class="text-gray-400">(No new messages)</span>
-              {% endif %}
-            </div>
-          </li>
-          {% endfor %}
-        </ul>
-
-        <!-- Create Room Form -->
-        <div class="mt-10 bg-white p-6 rounded-lg shadow">
-          <h3 class="text-xl font-semibold text-gray-800 mb-4">
-            Create a New Room
-          </h3>
-          <form
-            action="{{ url_for('create_room') }}"
-            method="POST"
-            class="flex flex-col gap-4"
-          >
-            <input
-              type="text"
-              name="room_name"
-              placeholder="Room Name"
-              required
-              class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              type="submit"
-              class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition duration-200"
-            >
+            <button type="submit"
+                    class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium">
               Create Room
             </button>
           </form>
         </div>
+
+        <!-- Rooms Grid -->
+        <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for room in rooms %}
+          <li class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200">
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-4">
+                <a href="{{ url_for('chat', room_id=room.id) }}"
+                   class="text-lg font-semibold text-gray-900 hover:text-indigo-600 transition-colors duration-200">
+                  {{ room.name }}
+                </a>
+                <div id="unread-{{ room.id }}" 
+                     class="flex items-center">
+                  {% if room.unread > 0 %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    {{ room.unread }} new
+                  </span>
+                  {% else %}
+                  <span class="text-sm text-gray-500">No new messages</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="flex justify-between items-center">
+                <div class="group-hover:translate-x-2 transition-transform duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
       </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200">
-      <div
-        class="max-w-7xl w-full mx-auto px-4 py-4 text-center text-sm text-gray-500"
-      >
-        &copy; {{ datetime.utcnow().year }} Discussion Forum. All rights reserved.
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+      <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500">
+        &copy; {{ datetime.utcnow().year }} Nishant. All rights reserved.
       </div>
     </footer>
 
-    <!-- Socket.IO Script -->
+    <!-- Keep the existing Socket.IO script -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
       const socket = io();
       const username = "{{ username }}";
 
-      // Once connected, register with the server
       socket.on("connect", () => {
         socket.emit("register_index", { username, sid: socket.id });
       });
 
-      // Listen for unread updates
       socket.on("unread_update", (data) => {
         const unreadElem = document.getElementById("unread-" + data.room_id);
         if (unreadElem) {
           if (data.unread > 0) {
-            unreadElem.innerHTML = `<span class="font-medium text-red-600">(Unread: ${data.unread})</span>`;
+            unreadElem.innerHTML = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">${data.unread} new</span>`;
           } else {
-            unreadElem.innerHTML = `<span class="text-gray-400">(No new messages)</span>`;
+            unreadElem.innerHTML = `<span class="text-sm text-gray-500">No new messages</span>`;
           }
         }
       });
