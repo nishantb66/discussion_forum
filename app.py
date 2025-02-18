@@ -172,7 +172,7 @@ def chat(room_id):
 
     room = rooms_collection.find_one({"_id": ObjectId(room_id)})
     if not room:
-        return "Room not found.", 404
+        return "Room expired.", 404
 
     messages = list(
         messages_collection.find({"room_id": ObjectId(room_id)}).sort("timestamp", 1)
