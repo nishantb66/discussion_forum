@@ -45,19 +45,39 @@
       }
     </style>
   </head>
-  <body class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+  <body
+    class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100"
+  >
     <!-- Header -->
-    <header class="sticky top-0 z-50 backdrop-blur-sm bg-white/70 border-b border-gray-200 shadow-sm">
+    <header
+      class="sticky top-0 z-50 backdrop-blur-sm bg-white/70 border-b border-gray-200 shadow-sm"
+    >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div
+          class="flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
           <div class="flex items-center space-x-3">
-            <h1 class="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent tracking-tight">
+            <h1
+              class="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent tracking-tight"
+            >
               {{ room.name }}
             </h1>
           </div>
-          <button id="leave-button" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+          <button
+            id="leave-button"
+            class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm font-medium"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 mr-1.5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
+                clip-rule="evenodd"
+              />
             </svg>
             Leave Room
           </button>
@@ -69,40 +89,59 @@
     <main class="flex-1 py-6 px-4 sm:px-6 lg:px-8">
       <div class="max-w-4xl mx-auto">
         <!-- Messages Container -->
-        <div id="chat-box" class="messages-container bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 h-[calc(100vh-280px)] overflow-y-auto space-y-4">
-          {% for msg in messages %}
-            {% if msg.username == username %}
-              <!-- Message from current user (Right aligned) -->
-              <div class="flex justify-end animate-fadeInUp">
-                <div class="bg-indigo-100 rounded-lg p-3 max-w-xs md:max-w-md">
-                  <div class="text-sm font-semibold text-gray-900 text-right">{{ msg.username }}</div>
-                  <div class="mt-1 text-gray-800 text-right">{{ msg.text }}</div>
-                  <div class="mt-1 text-xs text-gray-500 text-right">
-                    {{ msg.timestamp }}
-                  </div>
-                </div>
+        <div
+          id="chat-box"
+          class="messages-container bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 h-[calc(100vh-280px)] overflow-y-auto space-y-4"
+        >
+          {% for msg in messages %} {% if msg.username == username %}
+          <!-- Message from current user (Right aligned) -->
+          <div class="flex justify-end animate-fadeInUp">
+            <div class="bg-indigo-100 rounded-lg p-3 max-w-xs md:max-w-md">
+              <div class="text-sm font-semibold text-gray-900 text-right">
+                {{ msg.username }}
               </div>
-            {% else %}
-              <!-- Message from others (Left aligned) -->
-              <div class="flex justify-start animate-fadeInUp">
-                <div class="bg-gray-100 rounded-lg p-3 max-w-xs md:max-w-md">
-                  <div class="text-sm font-semibold text-gray-900">{{ msg.username }}</div>
-                  <div class="mt-1 text-gray-800">{{ msg.text }}</div>
-                  <div class="mt-1 text-xs text-gray-500">
-                    {{ msg.timestamp }}
-                  </div>
-                </div>
+              <div class="mt-1 text-gray-800 text-right">{{ msg.text }}</div>
+              <div class="mt-1 text-xs text-gray-500 text-right">
+                {{ msg.timestamp }}
               </div>
-            {% endif %}
-          {% endfor %}
+            </div>
+          </div>
+          {% else %}
+          <!-- Message from others (Left aligned) -->
+          <div class="flex justify-start animate-fadeInUp">
+            <div class="bg-gray-100 rounded-lg p-3 max-w-xs md:max-w-md">
+              <div class="text-sm font-semibold text-gray-900">
+                {{ msg.username }}
+              </div>
+              <div class="mt-1 text-gray-800">{{ msg.text }}</div>
+              <div class="mt-1 text-xs text-gray-500">{{ msg.timestamp }}</div>
+            </div>
+          </div>
+          {% endif %} {% endfor %}
         </div>
 
         <!-- Message Input Form -->
         <form id="chat-form" class="relative">
-          <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" class="w-full px-4 py-3 pr-24 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 shadow-sm" />
-          <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+          <input
+            type="text"
+            id="message-input"
+            placeholder="Type your message..."
+            autocomplete="off"
+            class="w-full px-4 py-3 pr-24 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 shadow-sm"
+          />
+          <button
+            type="submit"
+            class="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 mr-1"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
+              />
             </svg>
             Send
           </button>
@@ -112,7 +151,9 @@
 
     <!-- Footer -->
     <footer class="bg-white/70 backdrop-blur-sm border-t border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 py-4 text-center text-sm text-gray-500">
+      <div
+        class="max-w-7xl mx-auto px-4 py-4 text-center text-sm text-gray-500"
+      >
         &copy; {{ datetime.utcnow().year }} Nishant. All rights reserved.
       </div>
     </footer>
@@ -123,30 +164,41 @@
       // Format ISO timestamp to a local time string (e.g., "03:45 PM")
       function formatTime(isoString) {
         const date = new Date(isoString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       }
 
       // Append message with proper alignment, time, and animation
       function appendMessage(data) {
         const isCurrentUser = data.username === username;
         const containerDiv = document.createElement("div");
-        containerDiv.className = isCurrentUser ? "flex justify-end animate-fadeInUp" : "flex justify-start animate-fadeInUp";
-        
+        containerDiv.className = isCurrentUser
+          ? "flex justify-end animate-fadeInUp"
+          : "flex justify-start animate-fadeInUp";
+
         const bubbleDiv = document.createElement("div");
-        bubbleDiv.className = isCurrentUser ? "bg-indigo-100 rounded-lg p-3 max-w-xs md:max-w-md" : "bg-gray-100 rounded-lg p-3 max-w-xs md:max-w-md";
-        
+        bubbleDiv.className = isCurrentUser
+          ? "bg-indigo-100 rounded-lg p-3 max-w-xs md:max-w-md"
+          : "bg-gray-100 rounded-lg p-3 max-w-xs md:max-w-md";
+
         const userDiv = document.createElement("div");
-        userDiv.className = "text-sm font-semibold" + (isCurrentUser ? " text-gray-900 text-right" : " text-gray-900");
+        userDiv.className =
+          "text-sm font-semibold" +
+          (isCurrentUser ? " text-gray-900 text-right" : " text-gray-900");
         userDiv.textContent = data.username;
-        
+
         const textDiv = document.createElement("div");
-        textDiv.className = "mt-1 text-gray-800" + (isCurrentUser ? " text-right" : "");
+        textDiv.className =
+          "mt-1 text-gray-800" + (isCurrentUser ? " text-right" : "");
         textDiv.textContent = data.text;
-        
+
         const timeDiv = document.createElement("div");
-        timeDiv.className = "mt-1 text-xs text-gray-500" + (isCurrentUser ? " text-right" : "");
+        timeDiv.className =
+          "mt-1 text-xs text-gray-500" + (isCurrentUser ? " text-right" : "");
         timeDiv.textContent = formatTime(data.timestamp);
-        
+
         bubbleDiv.appendChild(userDiv);
         bubbleDiv.appendChild(textDiv);
         bubbleDiv.appendChild(timeDiv);
@@ -177,7 +229,8 @@
       // Listen for status messages (join/leave notifications)
       socket.on("status", (msg) => {
         const statusDiv = document.createElement("div");
-        statusDiv.className = "my-2 px-4 py-2 bg-gray-50 rounded-lg text-sm text-gray-500 text-center";
+        statusDiv.className =
+          "my-2 px-4 py-2 bg-gray-50 rounded-lg text-sm text-gray-500 text-center";
         statusDiv.textContent = msg;
         chatBox.appendChild(statusDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -189,7 +242,9 @@
         if (!document.getElementById(typingId)) {
           const typingDiv = document.createElement("div");
           typingDiv.id = typingId;
-          typingDiv.className = "my-2 px-4 py-2 bg-gray-50 rounded-lg text-sm text-gray-500 text-center italic";
+          // Make the "is typing..." text bold
+          typingDiv.className =
+            "my-2 px-4 py-2 bg-gray-50 rounded-lg text-sm text-gray-500 text-center font-bold";
           typingDiv.textContent = data.username + " is typing...";
           chatBox.appendChild(typingDiv);
           chatBox.scrollTop = chatBox.scrollHeight;
@@ -245,6 +300,3 @@
     </script>
   </body>
 </html>
-
-
-
