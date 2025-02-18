@@ -260,19 +260,14 @@
                   <h3 class="text-lg font-semibold text-gray-900 mb-1">
                     {{ room.name }}
                   </h3>
-                  <p class="text-sm text-gray-500">
-                    {{ room.unread }} unread message{% if room.unread != 1 %}s{%
-                    endif %}
-                  </p>
-                </div>
-                <div id="unread-{{ room.id }}" class="flex items-center">
-                  {% if room.unread > 0 %}
-                  <span
-                    class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 text-sm font-medium"
-                  >
-                    {{ room.unread }}
-                  </span>
-                  {% endif %}
+                  <div id="unread-{{ room.id }}" class="flex items-center">
+                    {% if room.unread > 0 %}
+                    <p class="text-sm text-gray-500">
+                      {{ room.unread }} unread message{% if room.unread != 1
+                      %}s{% endif %}
+                    </p>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
               <div
