@@ -27,7 +27,6 @@
           opacity: 0;
           transform: translateY(10px);
         }
-
         to {
           opacity: 1;
           transform: translateY(0);
@@ -52,9 +51,7 @@
     </style>
   </head>
 
-  <body
-    class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50"
-  >
+  <body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
     <!-- Loading Indicator -->
     <div
       id="loadingIndicator"
@@ -127,9 +124,9 @@
               </svg>
               <span class="text-sm text-gray-700">
                 Welcome,
-                <span class="font-semibold text-indigo-700"
-                  >{{ username }}</span
-                >
+                <span class="font-semibold text-indigo-700">
+                  {{ username }}
+                </span>
               </span>
             </div>
             <a
@@ -188,9 +185,9 @@
               </svg>
               <span class="text-sm text-gray-700">
                 Welcome,
-                <span class="font-semibold text-indigo-700"
-                  >{{ username }}</span
-                >
+                <span class="font-semibold text-indigo-700">
+                  {{ username }}
+                </span>
               </span>
             </div>
             <a
@@ -298,8 +295,8 @@
                   <div id="unread-{{ room.id }}" class="flex items-center">
                     {% if room.unread > 0 %}
                     <p class="text-sm text-gray-500">
-                      {{ room.unread }} unread message{% if room.unread != 1
-                      %}s{% endif %}
+                      {{ room.unread }} unread message
+                      {% if room.unread != 1 %}s{% endif %}
                     </p>
                     {% endif %}
                   </div>
@@ -358,57 +355,6 @@
         {% endif %}
       </div>
     </main>
-
-    <!-- Socket.IO Script -->
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script>
-      function toggleCreateRoomForm() {
-        const form = document.getElementById("createRoomForm");
-        form.classList.toggle("hidden");
-
-        if (!form.classList.contains("hidden")) {
-          // If form is now visible, focus the input
-          setTimeout(() => {
-            const input = form.querySelector('input[name="room_name"]');
-            if (input) input.focus();
-          }, 100);
-        }
-      }
-
-      const socket = io();
-      const username = "{{ username }}";
-
-      socket.on("connect", () => {
-        socket.emit("register_index", { username, sid: socket.id });
-      });
-
-      socket.on("unread_update", (data) => {
-        const unreadElem = document.getElementById(`unread-${data.room_id}`);
-        if (unreadElem) {
-          unreadElem.innerHTML =
-            data.unread > 0
-              ? `<span class="flex items-center px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium">${data.unread} New</span>`
-              : `<span class="text-sm text-gray-500">No new messages</span>`;
-        }
-      });
-
-      // Toggle mobile menu
-      document
-        .getElementById("mobile-menu-toggle")
-        .addEventListener("click", function () {
-          var mobileMenu = document.getElementById("mobile-menu");
-          mobileMenu.classList.toggle("hidden");
-        });
-
-      // Hide loading indicator on page load
-      window.addEventListener("load", function () {
-        const loadingIndicator = document.getElementById("loadingIndicator");
-        if (loadingIndicator) {
-          loadingIndicator.style.display = "none";
-        }
-      });
-    </script>
-
     {% else %}
     <!-- Unauthenticated View -->
     <div
@@ -525,5 +471,65 @@
       </div>
     </div>
     {% endif %}
+
+    <!-- Socket.IO Script (always loaded) -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+      // Toggle "Create Room" form
+      function toggleCreateRoomForm() {
+        const form = document.getElementById("createRoomForm");
+        if (form) {
+          form.classList.toggle("hidden");
+          if (!form.classList.contains("hidden")) {
+            // Focus the input when form becomes visible
+            setTimeout(() => {
+              const input = form.querySelector('input[name="room_name"]');
+              if (input) input.focus();
+            }, 100);
+          }
+        }
+      }
+
+      // Initialize Socket only if user is authenticated
+      const isAuthenticated = "{{ is_authenticated }}";
+      if (isAuthenticated === "True") {
+        const socket = io();
+        const username = "{{ username }}";
+
+        socket.on("connect", () => {
+          socket.emit("register_index", { username, sid: socket.id });
+        });
+
+        socket.on("unread_update", (data) => {
+          const unreadElem = document.getElementById(`unread-${data.room_id}`);
+          if (unreadElem) {
+            unreadElem.innerHTML =
+              data.unread > 0
+                ? `<span class="flex items-center px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium">${data.unread} New</span>`
+                : `<span class="text-sm text-gray-500">No new messages</span>`;
+          }
+        });
+      }
+
+      // Toggle mobile menu (works for both authenticated and unauthenticated)
+      const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+      if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener("click", function () {
+          const mobileMenu = document.getElementById("mobile-menu");
+          if (mobileMenu) {
+            mobileMenu.classList.toggle("hidden");
+          }
+        });
+      }
+
+      // Hide loading indicator on page load (for all users)
+      window.addEventListener("load", function () {
+        const loadingIndicator = document.getElementById("loadingIndicator");
+        if (loadingIndicator) {
+          loadingIndicator.style.display = "none";
+        }
+      });
+    </script>
   </body>
 </html>
+
