@@ -314,6 +314,10 @@ def add_no_cache_headers(response):
 
 
 if __name__ == "__main__":
-    t = threading.Thread(target=keep_alive, daemon=True)
-    t.start()
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+
+
+# if __name__ == "__main__":
+#     t = threading.Thread(target=keep_alive, daemon=True)
+#     t.start()
+#     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
