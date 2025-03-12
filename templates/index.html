@@ -55,6 +55,41 @@
   <body
     class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50"
   >
+    <!-- Loading Indicator -->
+    <div
+      id="loadingIndicator"
+      class="fixed inset-0 flex items-center justify-center bg-white z-50"
+    >
+      <div class="flex flex-col items-center space-y-4">
+        <!-- Spinner using Tailwind's animate-spin -->
+        <svg
+          class="animate-spin h-8 w-8 text-indigo-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          ></path>
+        </svg>
+        <!-- Login related text -->
+        <p class="text-sm text-gray-700 text-center">
+          Due to free limit constraints of Render services, it might take up to
+          a minute...hang on
+        </p>
+      </div>
+    </div>
+
     {% if is_authenticated %}
     <!-- Authenticated View -->
     <header
@@ -364,6 +399,14 @@
           var mobileMenu = document.getElementById("mobile-menu");
           mobileMenu.classList.toggle("hidden");
         });
+
+      // Hide loading indicator on page load
+      window.addEventListener("load", function () {
+        const loadingIndicator = document.getElementById("loadingIndicator");
+        if (loadingIndicator) {
+          loadingIndicator.style.display = "none";
+        }
+      });
     </script>
 
     {% else %}
