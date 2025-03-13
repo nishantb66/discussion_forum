@@ -240,24 +240,47 @@ def handle_send_message(data):
     username = data.get("username")
     room_id = data.get("room_id")
     message_text = data.get("message")
+    reply_to = data.get("reply_to")  # new field for referencing a message
+
     if not (username and room_id and message_text):
         return
+
+    # Default reply_text is empty if not replying
+    reply_text = ""
+    if reply_to:
+        referenced_msg = messages_collection.find_one({"_id": ObjectId(reply_to)})
+        if referenced_msg:
+            reply_text = referenced_msg.get("text", "")
+
     new_msg = {
         "room_id": ObjectId(room_id),
         "username": username,
         "text": message_text,
         "timestamp": datetime.utcnow(),
     }
-    messages_collection.insert_one(new_msg)
-    emit(
+    if reply_to:
+        new_msg["reply_to"] = ObjectId(reply_to)
+        new_msg["reply_text"] = reply_text
+
+    # Insert the new message and capture its _id
+    result = messages_collection.insert_one(new_msg)
+    new_msg_id = str(result.inserted_id)
+
+    # Emit the new message to all clients in the room, now including the message id.
+    socketio.emit(
         "new_message",
         {
+            "id": new_msg_id,
             "username": username,
             "text": message_text,
             "timestamp": new_msg["timestamp"].isoformat(),
+            "reply_to": str(reply_to) if reply_to else None,
+            "reply_text": reply_text,
         },
         room=room_id,
     )
+
+    # Update unread counts for all users (code remains the same)...
     for user, sid in index_sockets.items():
         chat_user_doc = chat_users_collection.find_one({"username": user})
         last_read_time = chat_user_doc.get("last_read", {}).get(room_id, datetime.min)
@@ -286,7 +309,7 @@ def handle_stop_typing(data):
 
 def keep_alive():
     ping_url = os.getenv(
-        "KEEP_ALIVE_URL", "https://portal-discussion-forum.onrender.com/ping"
+        "KEEP_ALIVE_URL", "https://portal-discussion-forum-keng.onrender.com/ping"
     )
     interval_seconds = 600
     while True:
