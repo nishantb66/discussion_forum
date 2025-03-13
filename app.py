@@ -286,7 +286,7 @@ def handle_stop_typing(data):
 
 def keep_alive():
     ping_url = os.getenv(
-        "KEEP_ALIVE_URL", "https://portal-discussion-forum.onrender.com/ping"
+        "KEEP_ALIVE_URL", "https://portal-discussion-forum-keng.onrender.com/ping"
     )
     interval_seconds = 600
     while True:
