@@ -288,7 +288,7 @@ def keep_alive():
     ping_url = os.getenv(
         "KEEP_ALIVE_URL", "https://portal-discussion-forum.onrender.com/ping"
     )
-    interval_seconds = 420
+    interval_seconds = 600
     while True:
         time.sleep(interval_seconds)
         try:
@@ -313,11 +313,11 @@ def add_no_cache_headers(response):
     return response
 
 
-if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
-
-
 # if __name__ == "__main__":
-#     t = threading.Thread(target=keep_alive, daemon=True)
-#     t.start()
 #     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+
+
+if __name__ == "__main__":
+    t = threading.Thread(target=keep_alive, daemon=True)
+    t.start()
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
