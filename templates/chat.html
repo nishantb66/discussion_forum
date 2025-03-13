@@ -100,28 +100,9 @@
               <div class="text-sm font-semibold text-gray-900 text-right">
                 {{ msg.username }}
               </div>
-
-              {% if msg.reply_text %}
-              <div
-                class="mb-2 p-2 border-l-2 border-gray-300 text-xs text-gray-500 italic bg-indigo-50 rounded"
-              >
-                Replying to: {{ msg.reply_text }}
-              </div>
-              {% endif %}
-
               <div class="mt-1 text-gray-800 text-right">{{ msg.text }}</div>
               <div class="mt-1 text-xs text-gray-500 text-right">
                 {{ msg.timestamp }}
-              </div>
-
-              <!-- The Reply button (right aligned) -->
-              <div class="mt-1 text-right">
-                <button
-                  class="text-xs text-indigo-600 underline"
-                  onclick="setReply('{{ msg._id }}', '{{ msg.username|escapejs }}', '{{ msg.text|escapejs }}')"
-                >
-                  Reply
-                </button>
               </div>
             </div>
           </div>
@@ -132,34 +113,12 @@
               <div class="text-sm font-semibold text-gray-900">
                 {{ msg.username }}
               </div>
-
-              {% if msg.reply_text %}
-              <div
-                class="mb-2 p-2 border-l-2 border-gray-300 text-xs text-gray-500 italic bg-indigo-50 rounded"
-              >
-                Replying to: {{ msg.reply_text }}
-              </div>
-              {% endif %}
-
               <div class="mt-1 text-gray-800">{{ msg.text }}</div>
               <div class="mt-1 text-xs text-gray-500">{{ msg.timestamp }}</div>
-
-              <!-- The Reply button (left aligned) -->
-              <div class="mt-1 text-left">
-                <button
-                  class="text-xs text-indigo-600 underline"
-                  onclick="setReply('{{ msg._id }}', '{{ msg.username|escapejs }}', '{{ msg.text|escapejs }}')"
-                >
-                  Reply
-                </button>
-              </div>
             </div>
           </div>
           {% endif %} {% endfor %}
         </div>
-
-        <!-- Right above the chat form -->
-        <div id="reply-bar" class="mb-2"></div>
 
         <!-- Message Input Form -->
         <form id="chat-form" class="relative">
@@ -202,42 +161,6 @@
     <!-- Socket.IO Script -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
-      let replyToId = null; // ID of the message being replied to
-      let replyToText = ""; // text of the message being replied to
-      let replyToUsername = ""; // username of the message being replied to
-
-      function setReply(messageId, user, text) {
-        replyToId = messageId;
-        replyToText = text;
-        replyToUsername = user;
-
-        const replyBar = document.getElementById("reply-bar");
-        if (replyBar) {
-          replyBar.innerHTML = `
-      <div class="bg-indigo-50 p-2 rounded mb-2 text-sm text-gray-700">
-        <strong>Replying to ${user}:</strong> ${text}
-        <button
-          class="ml-2 text-red-600 text-xs underline"
-          onclick="cancelReply()"
-        >
-          Cancel
-        </button>
-      </div>
-    `;
-        }
-        document.getElementById("message-input").focus();
-      }
-
-      function cancelReply() {
-        replyToId = null;
-        replyToText = "";
-        replyToUsername = "";
-        const replyBar = document.getElementById("reply-bar");
-        if (replyBar) {
-          replyBar.innerHTML = "";
-        }
-      }
-
       // Format ISO timestamp to a local time string (e.g., "03:45 PM")
       function formatTime(isoString) {
         const date = new Date(isoString);
@@ -260,39 +183,25 @@
           ? "bg-indigo-100 rounded-lg p-3 max-w-xs md:max-w-md"
           : "bg-gray-100 rounded-lg p-3 max-w-xs md:max-w-md";
 
-        // user
         const userDiv = document.createElement("div");
         userDiv.className =
           "text-sm font-semibold" +
           (isCurrentUser ? " text-gray-900 text-right" : " text-gray-900");
         userDiv.textContent = data.username;
-        bubbleDiv.appendChild(userDiv);
 
-        // If there's a reply_text, display it
-        if (data.reply_text) {
-          const replyDiv = document.createElement("div");
-          replyDiv.className =
-            "mb-2 p-2 border-l-2 border-gray-300 text-xs text-gray-500 italic " +
-            (isCurrentUser ? "bg-indigo-50" : "bg-gray-50") +
-            " rounded";
-          replyDiv.textContent = "Replying to: " + data.reply_text;
-          bubbleDiv.appendChild(replyDiv);
-        }
-
-        // message text
         const textDiv = document.createElement("div");
         textDiv.className =
           "mt-1 text-gray-800" + (isCurrentUser ? " text-right" : "");
         textDiv.textContent = data.text;
-        bubbleDiv.appendChild(textDiv);
 
-        // timestamp
         const timeDiv = document.createElement("div");
         timeDiv.className =
           "mt-1 text-xs text-gray-500" + (isCurrentUser ? " text-right" : "");
         timeDiv.textContent = formatTime(data.timestamp);
-        bubbleDiv.appendChild(timeDiv);
 
+        bubbleDiv.appendChild(userDiv);
+        bubbleDiv.appendChild(textDiv);
+        bubbleDiv.appendChild(timeDiv);
         containerDiv.appendChild(bubbleDiv);
         chatBox.appendChild(containerDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -359,12 +268,10 @@
             username,
             room_id: roomId,
             message: messageText,
-            reply_to: replyToId, // <-- include the reference ID
           });
           messageInput.value = "";
           socket.emit("stop_typing", { username, room_id: roomId });
           typing = false;
-          cancelReply(); // clear the reply state after sending
         }
       });
 

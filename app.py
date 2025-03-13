@@ -240,49 +240,24 @@ def handle_send_message(data):
     username = data.get("username")
     room_id = data.get("room_id")
     message_text = data.get("message")
-    reply_to = data.get("reply_to")  # <-- new field for referencing a message
-
     if not (username and room_id and message_text):
         return
-
-    # Default reply_text is empty if not replying
-    reply_text = ""
-
-    # If the user is replying to another message, fetch that message’s text from DB
-    if reply_to:
-        referenced_msg = messages_collection.find_one({"_id": ObjectId(reply_to)})
-        if referenced_msg:
-            # We store the text of the original message so it can be displayed in the new message
-            reply_text = referenced_msg.get("text", "")
-
     new_msg = {
         "room_id": ObjectId(room_id),
         "username": username,
         "text": message_text,
         "timestamp": datetime.utcnow(),
     }
-
-    # If replying, store reference in the new message document
-    if reply_to:
-        new_msg["reply_to"] = ObjectId(reply_to)
-        new_msg["reply_text"] = reply_text
-
     messages_collection.insert_one(new_msg)
-
-    # Emit the new message to all clients in the room
-    socketio.emit(
+    emit(
         "new_message",
         {
             "username": username,
             "text": message_text,
             "timestamp": new_msg["timestamp"].isoformat(),
-            "reply_to": str(reply_to) if reply_to else None,
-            "reply_text": reply_text,
         },
         room=room_id,
     )
-
-    # Update unread counts for all users
     for user, sid in index_sockets.items():
         chat_user_doc = chat_users_collection.find_one({"username": user})
         last_read_time = chat_user_doc.get("last_read", {}).get(room_id, datetime.min)
@@ -311,7 +286,7 @@ def handle_stop_typing(data):
 
 def keep_alive():
     ping_url = os.getenv(
-        "KEEP_ALIVE_URL", "https://portal-discussion-forum-keng.onrender.com/ping"
+        "KEEP_ALIVE_URL", "https://portal-discussion-forum.onrender.com/ping"
     )
     interval_seconds = 600
     while True:
